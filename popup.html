@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Badger - Coupon Finder</title>
+  <style>
+    body {
+      width: 320px;
+      padding: 15px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .logo {
+      width: 48px;
+      height: 48px;
+      margin-right: 10px;
+    }
+    .title {
+      font-size: 24px;
+      color: #333;
+    }
+    .status {
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+      background: #f5f5f5;
+    }
+    .button {
+      width: 100%;
+      padding: 12px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 0;
+    }
+    .button:hover {
+      background: #45a049;
+    }
+    .button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+    .savings {
+      text-align: center;
+      margin: 15px 0;
+      font-size: 18px;
+      color: #4CAF50;
+    }
+    .status {
+      text-align: center;
+    }
+    .cart-total {
+      text-align: center;
+      color:#333;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="images/badger_icon_48.png" alt="Badger Logo" class="logo">
+    <h1 class="title">Badger</h1>
+  </div>
+  
+  <div class="status" id="status">
+    The smartest way to save money on your purchases.
+  </div>
+
+  <div class="cart-total" id="cart-total">
+    Cart Total: $0.00
+  </div>
+  
+  <div class="savings" id="savings">
+    Total Savings: $0.00
+  </div>
+
+  
+  
+  <button id="findCoupons" class="button">
+    Find & Apply Coupons
+  </button>
+  
+  <button id="stopSearch" class="button" style="background: #f44336; display: none;">
+    Stop Search
+  </button>
+
+    <button id="foundCoupon" class="button" style="display: none;">
+      Discount Applied
+    </button>
+
+    <button id="noDiscounts" class="button" style="background: #cccccc; display: none;">
+      No Discounts Found
+    </button>
+
+  <script src="popup.js"></script>
+</body>
+</html>

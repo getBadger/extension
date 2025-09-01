@@ -65,9 +65,9 @@ function updateTotalSavings(originalPrice, newPrice, coupon) {
   };
   
   // Store in chrome.storage for persistence
-  chrome.storage.local.set({ 'badgerSavings': totalSavingsHistory }, () => {
-    console.log('Savings history updated:', totalSavingsHistory);
-  });
+  // chrome.storage.local.set({ 'badgerSavings': totalSavingsHistory }, () => {
+  //   console.log('Savings history updated:', totalSavingsHistory);
+  // });
 }
 
 // Function to get saved total savings

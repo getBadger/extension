@@ -17,3 +17,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
   }
 }); 
+ 
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    if (changeInfo.status === 'complete' && tab.url.includes('checkout')) {
+        const hostname = new URL(tab.url).hostname;
+        const apiEndpoint = `http://localhost:3000/api/coupons?site=${hostname}`;
+
+        fetch(apiEndpoint)
+            .then(response => response.json())
+            .then(data => {
+                if (data.coupons && data.coupons.length > 0) {
+                    // Send a message to the popup or open it
+                    console.log('Discount codes found:', data.coupons);
+                    // Open the popup if you want it to appear automatically
+                    // Note: Chrome doesn't allow programmatic popup opening for security reasons,
+                    // but you can show a badge or update the popup's content
+                    chrome.runtime.sendMessage({ action: "showPopup", coupons: data.coupons });
+                } else {
+                    console.log('No discount codes found.');
+                }
+            })
+            .catch(error => console.error('Error fetching coupons:', error));
+    }
+});

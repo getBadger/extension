@@ -27,29 +27,29 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete' && tab.url) {
    
-    if (tab.url.toLowerCase().includes('checkout') || tab.url.toLowerCase().includes('shop')) {
-      // Update the extension icon to indicate it's active
-      chrome.action.setIcon({
-        path: {
-          "16": "images/badger_icon_active_16.png",
-          "32": "images/badger_icon_active_32.png",
-          "48": "images/badger_icon_active_48.png",
-          "128": "images/badger_icon_active_128.png"
-        },
-        tabId: tabId
-      });
-    } else {
-      // Reset to default icon
-      chrome.action.setIcon({
-        path: {
-          "16": "images/badger_icon_16.png",
-          "32": "images/badger_icon_32.png",
-          "48": "images/badger_icon_48.png",
-          "128": "images/badger_icon_128.png"
-        },
-        tabId: tabId
-      });
-    }
+    // if (tab.url.toLowerCase().includes('checkout') || tab.url.toLowerCase().includes('shop')) {
+    //   // Update the extension icon to indicate it's active
+    //   chrome.action.setIcon({
+    //     path: {
+    //       "16": "images/badger_icon_active_16.png",
+    //       "32": "images/badger_icon_active_32.png",
+    //       "48": "images/badger_icon_active_48.png",
+    //       "128": "images/badger_icon_active_128.png"
+    //     },
+    //     tabId: tabId
+    //   });
+    // } else {
+    //   // Reset to default icon
+    //   chrome.action.setIcon({
+    //     path: {
+    //       "16": "images/badger_icon_16.png",
+    //       "32": "images/badger_icon_32.png",
+    //       "48": "images/badger_icon_48.png",
+    //       "128": "images/badger_icon_128.png"
+    //     },
+    //     tabId: tabId
+    //   });
+    // }
   }
 });
 

@@ -54,6 +54,8 @@ const TEST_COUPONS = [
   // 'FREESHIP'
 ];
 
+
+
 // Function to update total savings
 function updateTotalSavings(originalPrice, newPrice, coupon) {
   totalSavingsHistory = {
@@ -84,7 +86,29 @@ function getTotalSavings() {
 
 // Initialize on checkout pages
 async function initializeBadger() {
+
+
   if (isCheckoutPage()) {
+
+    const hostname = location.hostname;
+    let coupons = [];
+
+    try {
+      const response = await fetch(`https://code-api-42s1.onrender.com/api/coupons?site=${hostname}`);
+      const data = await response.json();
+      coupons = data.coupons || [];
+    } catch (error) {
+      console.error('Error fetching coupons:', error);
+    }
+
+    try {
+      const response = await fetch(`https://code-api-42s1.onrender.com/api/coupons?site=${hostname}`);
+      const data = await response.json();
+      coupons = data.coupons || [];
+    } catch (error) {
+      console.error('Error fetching coupons:', error);
+    }
+
     console.log('Checkout page detected, initializing Badger...');
     const cartTotal = getCurrentPrice();
     console.log('Cart total:', cartTotal);
@@ -110,32 +134,15 @@ async function initializeBadger() {
     popup.innerHTML = `
       <div style="display: flex; align-items: center; margin-bottom: 10px;">
         <img src="${chrome.runtime.getURL('images/badger_icon_48.png')}" style="width: 32px; height: 32px; margin-right: 10px;">
-        <h2 style="margin: 0; color: #333; font-size: 16px;">Badger Found Coupons!</h2>
+        <h2 style="margin: 0; color: #333; font-size: 16px;">Badger Coupons!</h2>
       </div>
       <p style="margin: 8px 0; color: #666; font-size: 14px;">Current Cart Total: $${cartTotal.toFixed(2)}</p>
       <div id="badger-savings" style="margin: 8px 0; color: #4CAF50; font-size: 14px;">Total Savings: $0.00</div>
-      <div id="badger-status" style="
-        margin: 8px 0;
-        color: #666;
-        min-height: 16px;
-        font-size: 13px;
-      "></div>
-      <div id="badger-progress-container" style="
-        width: 100%;
-        height: 4px;
-        background-color: #f0f0f0;
-        border-radius: 2px;
-        overflow: hidden;
-        margin: 8px 0;
-        display: none;
-      ">
-        <div id="badger-progress-bar" style="
-          width: 0%;
-          height: 100%;
-          background-color: #4CAF50;
-          transition: width 0.3s ease;
-        "></div>
+      <div id="badger-status" style="margin: 8px 0; color: #666; min-height: 16px; font-size: 13px;"></div>
+      <div id="badger-progress-container" style="width: 100%; height: 4px; background-color: #f0f0f0; border-radius: 2px; overflow: hidden; margin: 8px 0; display: none;">
+        <div id="badger-progress-bar" style="width: 0%; height: 100%; background-color: #4CAF50; transition: width 0.3s ease;"></div>
       </div>
+
       <button id="badger-find-coupons" style="
         background-color: #4CAF50;
         color: white;
@@ -148,19 +155,41 @@ async function initializeBadger() {
         margin-top: 8px;
         transition: background-color 0.2s ease;
       ">Find & Apply Coupons</button>
-      <button id="badger-close" style="
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        background: none;
-        border: none;
-        font-size: 18px;
-        cursor: pointer;
-        color: #999;
-        padding: 0;
-        line-height: 1;
-      ">×</button>
+
+      
+
+      <button id="badger-close" style="position: absolute; top: 8px; right: 8px; background: none; border: none; font-size: 18px; cursor: pointer; color: #999; padding: 0; line-height: 1;">×</button>
     `;
+      const couponList = popup.querySelector('#coupon-list');
+
+    // if (coupons.length > 0) {
+    //   coupons.forEach(coupon => {
+    //     const li = document.createElement('li');
+    //     li.style.marginBottom = '6px';
+
+    //     const span = document.createElement('span');
+    //     span.textContent = coupon;
+    //     li.appendChild(span);
+
+    //     const button = document.createElement('button');
+    //     button.textContent = 'Copy';
+    //     button.style.marginLeft = '10px';
+    //     button.style.cursor = 'pointer';
+
+    //     button.addEventListener('click', () => {
+    //       navigator.clipboard.writeText(coupon)
+    //         .then(() => alert(`Copied: ${coupon}`))
+    //         .catch(err => console.error('Failed to copy:', err));
+    //     });
+
+    //     li.appendChild(button);
+    //     couponList.appendChild(li);
+    //   });
+    // } else {
+    //   couponList.innerHTML = '<li>No discount codes found for this site.</li>';
+    // }
+
+
 
     // Add the popup to the page
     document.body.appendChild(popup);
@@ -178,15 +207,17 @@ async function initializeBadger() {
     document.getElementById('badger-find-coupons').addEventListener('click', () => {
       console.log('Find coupons button clicked');
       isSearching = true;
+
       // Show progress bar
       const progressContainer = document.getElementById('badger-progress-container');
       progressContainer.style.display = 'block';
+
       // Change button text
       const button = document.getElementById('badger-find-coupons');
-      button.textContent = 'Testing Coupons...';
+      button.textContent = 'Applying Coupon...';
       button.disabled = true;
       button.style.backgroundColor = '#cccccc';
-      findAndTestCoupons();
+      findAndTestCoupons(coupons);
     });
 
     document.getElementById('badger-close').addEventListener('click', () => {
@@ -199,15 +230,17 @@ async function initializeBadger() {
 }
 
 // Call the initialization function when the content script loads
-initializeBadger().catch(error => {
+initializeBadger()
+  // .then(response => response.json())
+  .catch(error => {
   console.error('Error initializing Badger:', error);
-});
+  });
 
 // Listen for messages from popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "startCouponSearch") {
     isSearching = true;
-    findAndTestCoupons();
+    findAndTestCoupons(coupons);
   } else if (message.action === "stopCouponSearch") {
     isSearching = false;
   } else if (message.action === "getCurrentPrice") {
@@ -234,7 +267,7 @@ function updateProgress(status, progress, savings = null) {
   }
 }
 
-async function findAndTestCoupons() {
+async function findAndTestCoupons(coupons) {
   const couponInput = findSingleElement(SELECTORS.input);
   if (!couponInput) {
     updateProgress("Could not find coupon input field on this page.", 100);
@@ -248,12 +281,13 @@ async function findAndTestCoupons() {
 
   // Store original price
   const originalPrice = getCurrentPrice();
-  const totalCoupons = TEST_COUPONS.length;
+  const totalCoupons = coupons.length;
   
-  for (let i = 0; i < TEST_COUPONS.length; i++) {
+  for (let i = 0; i < coupons.length; i++) {
     if (!isSearching) break;
     
-    const coupon = TEST_COUPONS[i];
+    // const coupon = TEST_COUPONS[i];
+    const coupon = coupons[i];
     const progress = ((i + 1) / totalCoupons) * 100;
 
     updateProgress(`Applying coupon: ${coupon}`, progress, bestSavings);

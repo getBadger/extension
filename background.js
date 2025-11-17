@@ -1,20 +1,31 @@
 import { createClient } from 'redis';
 
-// Redis configuration
-const redisConfig = {
-    username: 'default',
-    password: process.env.REDIS_PASSWORD,
-    socket: {
-        host: 'redis-11988.c15.us-east-1-2.ec2.cloud.redislabs.com',
-        port: 11988
-    }
-};
-
+let redisConfig = null;
 let redisClient = null;
+let cachedCoupons = {}; // Store coupons by tabId
+
+// Load Redis config from Chrome storage
+async function getRedisConfig() {
+    return new Promise((resolve) => {
+        chrome.storage.local.get(['redisPassword', 'redisHost', 'redisPort'], (result) => {
+            resolve({
+                username: 'default',
+                password: result.redisPassword,
+                socket: {
+                    host: result.redisHost || 'redis-11988.c15.us-east-1-2.ec2.cloud.redislabs.com',
+                    port: result.redisPort || 11988
+                }
+            });
+        });
+    });
+}
 
 // Initialize Redis connection
 async function initRedis() {
     if (!redisClient) {
+        if (!redisConfig) {
+            redisConfig = await getRedisConfig();
+        }
         redisClient = createClient(redisConfig);
         redisClient.on('error', err => console.log('Redis Client Error', err));
         await redisClient.connect();

@@ -2,7 +2,7 @@ import { createClient } from 'redis';
 
 const client = createClient({
     username: 'default',
-    password: 'REDACTED',
+    password: process.env.REDIS_PASSWORD,
     socket: {
         host: 'redis-11988.c15.us-east-1-2.ec2.redns.redis-cloud.com',
         port: 11988
@@ -11,9 +11,7 @@ const client = createClient({
 
 client.on('error', err => console.log('Redis Client Error', err));
 
-await client.connect();
-
-const redisKey = 'site:www.allbirds.com';
+await client.connect();const redisKey = 'site:www.allbirds.com';
 const [tab] = chrome.tabs.query({ active: true, currentWindow: true });
 
 //   if (!tab || !tab.url) return;

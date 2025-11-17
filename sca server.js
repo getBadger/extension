@@ -10,7 +10,7 @@ app.use(cors());
 
 const client = createClient({
     username: 'default',
-    password: 'REDACTED',
+    password: process.env.REDIS_PASSWORD,
     socket: {
         host: 'redis-11988.c15.us-east-1-2.ec2.redns.redis-cloud.com',
         port: 11988

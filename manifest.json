@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Badger",
+  "name": "getBadger: Save Money with Discount Codes & Coupons",
   "description": "Badger saves you money by applying the best available discounts at checkout.",
-  "version": "1.0.4",
+  "version": "1.0.7",
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -22,11 +22,15 @@
     "service_worker": "service_worker.js"
   },
   "content_scripts": [
-    {
-      "js": ["content-script.js"],
-      "matches":  ["<all_urls>"]
-    }
-  ],
+  {
+    "js": ["content-script.js"],
+    "matches": [
+      "*://www.amazon.com/gp/buy/*",
+      "*://www.allbirds.com/checkout*",
+      "*://*.wixsite.com/*/checkout*"
+    ]
+  }
+],
   "host_permissions": [ 
     "http://*/*",
     "https://*/*"
@@ -37,4 +41,3 @@
   }]
 }
 
-  

@@ -1,43 +1,85 @@
+import { createClient } from 'redis';
+
+// Redis configuration
+const redisConfig = {
+    username: 'default',
+    password: 'REDACTED',
+    socket: {
+        host: 'redis-11988.c15.us-east-1-2.ec2.cloud.redislabs.com',
+        port: 11988
+    }
+};
+
+let redisClient = null;
+
+// Initialize Redis connection
+async function initRedis() {
+    if (!redisClient) {
+        redisClient = createClient(redisConfig);
+        redisClient.on('error', err => console.log('Redis Client Error', err));
+        await redisClient.connect();
+    }
+    return redisClient;
+}
+
 // Initialize extension when installed
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('Badger extension installed');
+    console.log('Badger extension installed');
+    initRedis();
 });
 
 // Listen for messages from content script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "openPopup") {
-    // Open the popup for the current tab
-    chrome.action.openPopup();
-    
-    
-    // Send the cart total to the popup
-    chrome.runtime.sendMessage({
-      action: "showPopup",
-      cartTotal: message.cartTotal
-    });
-  }
-}); 
- 
+    if (message.action === "openPopup") {
+        chrome.action.openPopup();
+        chrome.runtime.sendMessage({
+            action: "showPopup",
+            cartTotal: message.cartTotal
+        });
+    }
+});
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if (changeInfo.status === 'complete' && tab.url.includes('checkout')) {
-        const hostname = new URL(tab.url).hostname;
-        const apiEndpoint = `http://localhost:3000/api/coupons?site=${hostname}`;
-
-        fetch(apiEndpoint)
-            .then(response => response.json())
-            .then(data => {
-                if (data.coupons && data.coupons.length > 0) {
-                    // Send a message to the popup or open it
-                    console.log('Discount codes found:', data.coupons);
-                    // Open the popup if you want it to appear automatically
-                    // Note: Chrome doesn't allow programmatic popup opening for security reasons,
-                    // but you can show a badge or update the popup's content
-                    chrome.runtime.sendMessage({ action: "showPopup", coupons: data.coupons });
-                } else {
-                    console.log('No discount codes found.');
+// Check for coupons in Redis when page loads
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+    if (changeInfo.status === 'complete' && tab.url) {
+        try {
+            const hostname = new URL(tab.url).hostname;
+            const redisKey = `site:www.${hostname}:coupons`;
+            
+            const client = await initRedis();
+            const coupons = await client.smembers(redisKey);
+            
+            if (coupons && coupons.length > 0) {
+                console.log(`✅ Found ${coupons.length} coupons for ${hostname}`);
+                
+                // Fetch coupon details
+                const couponDetails = [];
+                for (const code of coupons) {
+                    const details = await client.hgetall(`coupon:${code}`);
+                    if (details) {
+                        couponDetails.push(details);
+                    }
                 }
-            })
-            .catch(error => console.error('Error fetching coupons:', error));
+                
+                // Update badge to show coupon count
+                chrome.action.setBadgeText({ text: coupons.length.toString(), tabId });
+                chrome.action.setBadgeBackgroundColor({ color: '#4CAF50', tabId });
+                
+                // Send coupons to popup
+                chrome.runtime.sendMessage({
+                    action: "showPopup",
+                    coupons: couponDetails,
+                    count: coupons.length
+                }).catch(() => {
+                    // Popup not open yet, that's fine
+                });
+            } else {
+                // No coupons found, hide the extension
+                chrome.action.disable(tabId);
+                console.log(`❌ No coupons found for ${hostname}`);
+            }
+        } catch (error) {
+            console.error('Error checking coupons:', error);
+        }
     }
 });
